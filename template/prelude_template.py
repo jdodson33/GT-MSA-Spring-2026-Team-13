@@ -4,7 +4,10 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from base.base_model_development import precompute_features
+try:
+    from template.model_development_template import precompute_features
+except ImportError:
+    from model_development_template import precompute_features
 
 try:
     from IPython.display import display
@@ -36,7 +39,13 @@ def load_data():
 
     Loads from local file: data/Coin Metrics/coinmetrics_btc.csv
     """
-    local_path = Path("data/Coin Metrics/coinmetrics_btc.csv")
+    # Try project root relative to this file
+    base_dir = Path(__file__).parent.parent
+    local_path = base_dir / "data" / "Coin Metrics" / "coinmetrics_btc.csv"
+
+    # Fallback to CWD relative (for back-compat)
+    if not local_path.exists():
+        local_path = Path("data/Coin Metrics/coinmetrics_btc.csv")
 
     if not local_path.exists():
         raise FileNotFoundError(
@@ -107,7 +116,7 @@ def generate_date_ranges(
 
     Uses DATE_FREQ (daily) for start date generation.
     Each start_date is paired with exactly one end_date that is 1 year later.
-    Uses WINDOW_OFFSET from base_prelude.py for consistency across modules.
+    # Uses WINDOW_OFFSET from prelude_template.py for consistency across modules.
 
     Args:
         range_start: Start of the date range (YYYY-MM-DD format)

@@ -1,6 +1,6 @@
 # Bitcoin DCA Backtest System
 
-This document explains the backtesting framework in `base/base_backtest.py` and how to interpret its results for evaluating the dynamic DCA weight computation model.
+This document explains the backtesting framework in `template/backtest_template.py` and how to interpret its results for evaluating the dynamic DCA weight computation model.
 
 ## Overview
 
@@ -247,7 +247,7 @@ Run the backtest from the command line:
 ```bash
 cd /path/to/bitcoin_modal
 source venv/bin/activate
-python -m base.base_backtest
+python -m template.backtest_template
 ```
 
 The script will:

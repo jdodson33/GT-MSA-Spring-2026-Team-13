@@ -56,7 +56,7 @@ def sample_btc_df(sample_btc_prices):
 @pytest.fixture
 def sample_features_df(sample_btc_df):
     """Create precomputed features DataFrame."""
-    from base.base_model_development import precompute_features
+    from template.model_development_template import precompute_features
 
     return precompute_features(sample_btc_df)
 
@@ -352,7 +352,7 @@ def truncated_features_df_factory(sample_btc_df):
     Returns a function that precomputes features using only data up to
     a specified date, simulating point-in-time feature availability.
     """
-    from base.base_model_development import precompute_features
+    from template.model_development_template import precompute_features
 
     def _create_truncated_features(truncate_date):
         """Create features using only data up to truncate_date.
@@ -506,7 +506,7 @@ def sample_btc_df_validate():
 @pytest.fixture
 def sample_features_df_validate(sample_btc_df_validate):
     """Precompute features for validation sample data."""
-    from base.base_model_development import precompute_features
+    from template.model_development_template import precompute_features
 
     return precompute_features(sample_btc_df_validate)
 
@@ -529,7 +529,7 @@ def deterministic_features_fixture():
 
     Features are designed so that day with lowest z-score gets highest weight.
     """
-    from base.base_model_development import FEATS
+    from template.model_development_template import FEATS
 
     dates = pd.date_range("2025-01-01", "2025-01-05", freq="D")
     # Create features where day 0 has lowest z-scores (should get highest weight)
@@ -549,7 +549,7 @@ def deterministic_features_fixture():
 @pytest.fixture
 def min_w_floor_fixture():
     """Create features that would push weights below MIN_W without floor."""
-    from model_development import FEATS
+    from template.model_development_template import FEATS
 
     dates = pd.date_range("2025-01-01", "2025-01-10", freq="D")
     # Create extreme features that would cause very small raw weights
@@ -567,7 +567,7 @@ def min_w_floor_fixture():
 @pytest.fixture
 def degenerate_features_fixture():
     """Create all-zero or constant features for degenerate case testing."""
-    from model_development import FEATS
+    from template.model_development_template import FEATS
 
     dates = pd.date_range("2025-01-01", "2025-01-05", freq="D")
     # All features are zero (constant)

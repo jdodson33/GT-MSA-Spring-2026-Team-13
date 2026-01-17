@@ -15,10 +15,10 @@ This project computes dynamic investment weights for Bitcoin DCA strategies, adj
 
 ```
 .
-├── base/
-│   ├── base_model_development.py # Core model logic and weight computation
-│   ├── base_backtest.py         # Backtesting framework and visualization
-│   └── base_prelude.py          # Data loading and backtest utilities
+├── template/
+│   ├── model_development_template.py # Core model logic and weight computation
+│   ├── backtest_template.py         # Backtesting framework and visualization
+│   └── prelude_template.py          # Data loading and backtest utilities
 ├── requirements.txt       # Python dependencies
 ├── docs/                  # Documentation
 │   ├── model.md           # Model documentation
@@ -76,7 +76,7 @@ Download the data and place it in the `data/` directory, preserving the subfolde
 
 Run the full backtest analysis:
 ```bash
-python -m base.base_backtest
+python -m template.backtest_template
 ```
 
 This will:
@@ -88,8 +88,8 @@ This will:
 ### Using the Model
 
 ```python
-from base.base_prelude import load_data
-from base.base_model_development import precompute_features, compute_window_weights
+from template.prelude_template import load_data
+from template.model_development_template import precompute_features, compute_window_weights
 import pandas as pd
 
 # Load data
@@ -113,7 +113,7 @@ weights = compute_window_weights(
 
 ## Output
 
-Running `base.base_backtest` generates the following files in the `output/` directory:
+Running `template.backtest_template` generates the following files in the `output/` directory:
 
 - `performance_comparison.svg` - Line chart comparing dynamic vs uniform percentile over time
 - `excess_percentile_distribution.svg` - Histogram of excess percentile distribution
@@ -139,7 +139,7 @@ The test suite includes:
 ## Documentation
 
 - **Model Documentation**: See `docs/model.md` for detailed explanation of the weight computation model
-- **Backtest Documentation**: See `docs/model_backtest.md` for backtesting framework details (implements `base/base_backtest.py`)
+- **Backtest Documentation**: See `docs/model_backtest.md` for backtesting framework details (implements `template/backtest_template.py`)
 
 ## Key Features
 

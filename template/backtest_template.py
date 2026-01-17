@@ -2,19 +2,29 @@ import json
 import logging
 import os
 from datetime import datetime
+from pathlib import Path
 
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
-from base.base_model_development import compute_window_weights, precompute_features
-from base.base_prelude import (
-    backtest_dynamic_dca,
-    check_strategy_submission_ready,
-    load_data,
-    parse_window_dates,
-)
+try:
+    from template.model_development_template import compute_window_weights, precompute_features
+    from template.prelude_template import (
+        backtest_dynamic_dca,
+        check_strategy_submission_ready,
+        load_data,
+        parse_window_dates,
+    )
+except ImportError:
+    from model_development_template import compute_window_weights, precompute_features
+    from prelude_template import (
+        backtest_dynamic_dca,
+        check_strategy_submission_ready,
+        load_data,
+        parse_window_dates,
+    )
 
 # Set seaborn style for all plots
 sns.set_style("whitegrid")
@@ -36,7 +46,7 @@ def compute_weights_modal(df_window: pd.DataFrame) -> pd.Series:
     all dates in the window are in the "past" (we have price data for them).
 
     This implementation uses the shared compute_window_weights() from
-    base_model_development.py to ensure backtest results match production behavior.
+    model_development_template.py to ensure backtest results match production behavior.
     """
     global _FEATURES_DF
 
@@ -442,7 +452,8 @@ def main():
     )
 
     # Generate visualizations and export metrics
-    output_dir = "output"
+    base_dir = Path(__file__).parent.parent
+    output_dir = base_dir / "output"
     os.makedirs(output_dir, exist_ok=True)
 
     logging.info("Generating visualizations...")
