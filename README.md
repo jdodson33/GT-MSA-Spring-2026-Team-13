@@ -74,6 +74,11 @@ python data/download_data.py
 * **CoinMetrics BTC Data**: Daily OHLCV and network metrics.
   * **Bitcoin Price Source of Truth**: The `PriceUSD` column in the CoinMetrics data is the source of truth for BTC-USD prices. This is renamed to `PriceUSD_coinmetrics` in the codebase. This is the only column you hypothetically need to build a model (along with the datetime index, of course).
 * **Polymarket Data**: High-fidelity parquet files containing trades, odds history, and market metadata.
+  * **Timestamp note**: Some parquet timestamp columns are stored with incorrect
+    units (millisecond values encoded as microseconds). Direct reads can show
+    dates near 1970. Use the built-in loaders in `template/prelude_template.py`
+    or `eda/eda_starter_template.py`, which detect and correct these values at
+    runtime.
 
 **External Data:**
 External data is encouraged; students are responsible for ensuring that the data license permits all project participants to access and use (i.e., no proprietary data).

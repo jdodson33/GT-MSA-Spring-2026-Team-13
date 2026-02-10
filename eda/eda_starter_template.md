@@ -37,6 +37,9 @@ The template is organized into clear sections:
 #### `load_polymarket_data(datadir: Path) -> Optional[dict[str, pl.DataFrame]]`
 - Loads multiple Polymarket parquet files (markets, odds, summary)
 - Handles datetime columns intelligently (only converts if string type)
+- Fixes known timestamp unit corruption in some parquet files (milliseconds
+  encoded as microseconds) by detecting pre-2020 maxima and rescaling values,
+  then nulling invalid placeholders
 - Returns a dictionary mapping data types to DataFrames
 
 ### 4. Analysis Functions
