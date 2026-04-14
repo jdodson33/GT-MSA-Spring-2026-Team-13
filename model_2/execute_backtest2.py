@@ -14,7 +14,7 @@ from model_development2 import precompute_features, compute_window_weights
 _FEATURES_DF = None
 
 def compute_weights_wrapper(df_window: pd.DataFrame) -> pd.Series:
-    """Wrapper to bridge the backtest template to model_development2."""
+    
     global _FEATURES_DF
     if _FEATURES_DF is None:
         raise ValueError("Features not precomputed.")
