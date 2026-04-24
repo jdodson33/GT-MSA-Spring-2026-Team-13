@@ -11,7 +11,7 @@ from template.model_development_template import (
 import eda.eda_starter_template as eda_basics
 
 PRICE_COL = "PriceUSD"
-DYNAMIC_STRENGTH = 2.0 
+DYNAMIC_STRENGTH = 4.0 
 MIN_W = 1e-6
 
 # Markov Thresholds
@@ -38,28 +38,28 @@ def compute_markov_bull_probs(df: pl.DataFrame) -> pl.Series:
     ])
     
     # Use a 30-day rolling volatility to define thresholds
-    df = df.with_columns([
-        pl.col("daily_ret").rolling_std(window_size=30).alias("vol")
-    ])
+    # df = df.with_columns([
+    #     pl.col("daily_ret").rolling_std(window_size=30).alias("vol")
+    # ])
     
-    # Define states using multiples of volatility (e.g., 0.5x and 1.5x vol)
-    df = df.with_columns(
-        pl.when(pl.col("daily_ret") < -1.5 * pl.col("vol")).then(pl.lit(0))
-        .when(pl.col("daily_ret") < -0.5 * pl.col("vol")).then(pl.lit(1))
-        .when(pl.col("daily_ret") <= 0.5 * pl.col("vol")).then(pl.lit(2))
-        .when(pl.col("daily_ret") <= 1.5 * pl.col("vol")).then(pl.lit(3))
-        .otherwise(pl.lit(4))
-        .alias("state")
-    )
-    
+    # # Define states using multiples of volatility (e.g., 0.5x and 1.5x vol)
     # df = df.with_columns(
-    #     pl.when(pl.col("daily_ret") < -STR_THR).then(pl.lit(0))     # Str Bear
-    #     .when(pl.col("daily_ret") < -NEU_THR).then(pl.lit(1))       # Bear
-    #     .when(pl.col("daily_ret") <= NEU_THR).then(pl.lit(2))       # Neutral
-    #     .when(pl.col("daily_ret") <= STR_THR).then(pl.lit(3))       # Bull
-    #     .otherwise(pl.lit(4))                                       # Str Bull
+    #     pl.when(pl.col("daily_ret") < -1.5 * pl.col("vol")).then(pl.lit(0))
+    #     .when(pl.col("daily_ret") < -0.5 * pl.col("vol")).then(pl.lit(1))
+    #     .when(pl.col("daily_ret") <= 0.5 * pl.col("vol")).then(pl.lit(2))
+    #     .when(pl.col("daily_ret") <= 1.5 * pl.col("vol")).then(pl.lit(3))
+    #     .otherwise(pl.lit(4))
     #     .alias("state")
     # )
+    
+    df = df.with_columns(
+        pl.when(pl.col("daily_ret") < -STR_THR).then(pl.lit(0))     # Str Bear
+        .when(pl.col("daily_ret") < -NEU_THR).then(pl.lit(1))       # Bear
+        .when(pl.col("daily_ret") <= NEU_THR).then(pl.lit(2))       # Neutral
+        .when(pl.col("daily_ret") <= STR_THR).then(pl.lit(3))       # Bull
+        .otherwise(pl.lit(4))                                       # Str Bull
+        .alias("state")
+    )
 
     # 2. Build 5x5 Transition Matrix
     states = df.select("state").to_series().to_list()
@@ -71,7 +71,7 @@ def compute_markov_bull_probs(df: pl.DataFrame) -> pl.Series:
             
     # Normalize rows to get probabilities
     row_sums = matrix.sum(axis=1, keepdims=True)
-    row_sums[row_sums == 0] = 1 # Avoid division by zero
+    row_sums[row_sums == 0] = 1 
     transition_probs = matrix / row_sums
     
     # 3. Probability of (Bull + Str Bull) for each state
@@ -98,6 +98,10 @@ def precompute_features(df: pd.DataFrame) -> pd.DataFrame:
     
     ldf = ldf.with_columns([
         ((pl.col(PRICE_COL) / pl.col("sma_20")) - 1).alias("dist_sma_20")
+    ])
+
+    ldf = ldf.with_columns([
+        ((pl.col(PRICE_COL) / pl.col("sma_200")) - 1).alias("dist_sma_200")
     ])
     
     # RSI 14
@@ -126,10 +130,11 @@ def precompute_features(df: pd.DataFrame) -> pd.DataFrame:
 def compute_dynamic_multiplier(features_df: pd.DataFrame) -> np.ndarray:
     sig_rsi = (50 - features_df["rsi_14"]) / 50.0 
     sig_sma = -features_df["dist_sma_20"] * 5.0  
-    sig_markov = (features_df["markov_bull_prob"] - 0.4) * 5.0 
+    sig_trend = -features_df["dist_sma_200"] * 2.0
+    sig_markov = (features_df["markov_bull_prob"] - 0.5) * 5.0 
     
     # Weighted Signal Combination
-    combined = (sig_rsi * 0.3) + (sig_sma * 0.4) + (sig_markov * 0.3)
+    combined = (sig_rsi * 0.25) + (sig_sma * 0.25) + (sig_markov * 0.25) + (sig_trend * 0.25)
     
     is_bear = features_df[PRICE_COL] < features_df["sma_200"]
     multiplier = np.exp(combined * DYNAMIC_STRENGTH)
@@ -159,7 +164,6 @@ def compute_window_weights(
     dyn_multiplier = compute_dynamic_multiplier(df)
     raw_weights = base_pdf * dyn_multiplier
     
-    # Determine the split between past (locked) and future (uniform)
     past_end = min(current_date, end_date)
     n_past = len(pd.date_range(start=start_date, end=past_end, freq="D")) if start_date <= past_end else 0
     

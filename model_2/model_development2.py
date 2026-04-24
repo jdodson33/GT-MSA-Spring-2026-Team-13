@@ -14,10 +14,6 @@ DYNAMIC_STRENGTH = 3.0
 MIN_W = 1e-6
 
 def precompute_features(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Refactored for Value-Based Accumulation.
-    Combines MVRV, NVT, and Technical indicators with zero look-ahead bias.
-    """
     if "CapMrktCurUSD" in df.columns and "TxTfrValAdjUSD" in df.columns:
         df["NVTAdj"] = df["CapMrktCurUSD"] / df["TxTfrValAdjUSD"]
     else:
@@ -61,9 +57,6 @@ def precompute_features(df: pd.DataFrame) -> pd.DataFrame:
     return ldf.to_pandas().set_index("time").fillna(0)
 
 def compute_dynamic_multiplier(features_df: pd.DataFrame) -> np.ndarray:
-    """
-    Computes a single weighted multiplier from multiple value-based signals.
-    """
 
     w_mvrv = 0.40 
     w_nvt = 0.20 
@@ -88,9 +81,7 @@ def compute_window_weights(
     current_date: pd.Timestamp,
     locked_weights: np.ndarray | None = None,
 ) -> pd.Series:
-    """
-    Main API for the backtester.
-    """
+
     full_range = pd.date_range(start=start_date, end=end_date, freq="D")
     df = features_df.loc[:current_date].reindex(full_range).ffill().fillna(0)
     
